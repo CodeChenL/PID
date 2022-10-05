@@ -1,65 +1,76 @@
 #include <stdio.h>
 #include <stdlib.h>
-
+#include <unistd.h>
+#include <fcntl.h>
 #include "PID.h"
 
 /* Controller parameters */
-#define PID_KP  2.0f
-#define PID_KI  0.5f
-#define PID_KD  0.25f
+#define PID_KP 0.1f
+#define PID_KI 0.01f
+#define PID_KD 0.01f
 
 #define PID_TAU 0.02f
 
-#define PID_LIM_MIN -10.0f
-#define PID_LIM_MAX  10.0f
+#define PID_LIM_MIN -100.0f
+#define PID_LIM_MAX 0.0f
 
-#define PID_LIM_MIN_INT -5.0f
-#define PID_LIM_MAX_INT  5.0f
+#define PID_LIM_MIN_INT -100.0f
+#define PID_LIM_MAX_INT 0.0f
 
-#define SAMPLE_TIME_S 0.01f
+#define SAMPLE_TIME_S 1.0f
 
 /* Maximum run-time of simulation */
 #define SIMULATION_TIME_MAX 4.0f
 
 /* Simulated dynamical system (first order) */
-float TestSystem_Update(float inp);
+float TestSystem_Update();
 
 int main()
 {
     /* Initialise PID controller */
-    PIDController pid = { PID_KP, PID_KI, PID_KD,
-                          PID_TAU,
-                          PID_LIM_MIN, PID_LIM_MAX,
-			  PID_LIM_MIN_INT, PID_LIM_MAX_INT,
-                          SAMPLE_TIME_S };
+    PIDController pid = {PID_KP, PID_KI, PID_KD,
+                         PID_TAU,
+                         PID_LIM_MIN, PID_LIM_MAX,
+                         PID_LIM_MIN_INT, PID_LIM_MAX_INT,
+                         SAMPLE_TIME_S};
 
     PIDController_Init(&pid);
 
-    /* Simulate response using test system */
-    float setpoint = 1.0f;
-
     printf("Time (s)\tSystem Output\tControllerOutput\r\n");
-    for (float t = 0.0f; t <= SIMULATION_TIME_MAX; t += SAMPLE_TIME_S) {
+
+    for (int t = 0;; t += SAMPLE_TIME_S)
+    {
 
         /* Get measurement from system */
-        float measurement = TestSystem_Update(pid.out);
-
+        float measurement = TestSystem_Update();
         /* Compute new control signal */
-        PIDController_Update(&pid, setpoint, measurement);
+        PIDController_Update(&pid, 40, measurement);
 
-        printf("%f\t%f\t%f\r\n", t, measurement, pid.out);
-
+        printf("%d\t%f\t%f\r\n", t, measurement, pid.out);
+        sleep(SAMPLE_TIME_S);
     }
-
     return 0;
 }
 
-float TestSystem_Update(float inp) {
+float TestSystem_Update()
+{
 
     static float output = 0.0f;
-    static const float alpha = 0.02f;
+    const char *sensor = "/sys/class/thermal/thermal_zone1/temp";
+    int fd = open(sensor, O_RDONLY);
+    if (-1 == fd)
+    {
+        printf("sensor open fail\n");
+        return -1;
+    }
+    else
+    {
+        // printf("sensor open ok\n");
+    }
+    char temp[20] = {0};
+    read(fd, temp, sizeof(temp));
 
-    output = (SAMPLE_TIME_S * inp + output) / (1.0f + alpha * SAMPLE_TIME_S);
+    // printf("%f", atof(temp) / 1000);
 
-    return output;
+    return atof(temp) / 1000;
 }
