@@ -67,10 +67,10 @@ float TestSystem_Update()
     {
         // printf("sensor open ok\n");
     }
-    char temp[20] = {0};
+    char temp[8] = {0};
     read(fd, temp, sizeof(temp));
 
-    // printf("%f", atof(temp) / 1000);
+    // printf("%f\n", atof(temp) / 1000);
 
     return atof(temp) / 1000;
 }
