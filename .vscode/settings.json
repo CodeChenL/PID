@@ -2,6 +2,8 @@
     "files.associations": {
         "spidev.h": "c",
         "i2c.h": "c",
-        "fcntl.h": "c"
+        "fcntl.h": "c",
+        "exception": "c",
+        "new": "c"
     }
 }

@@ -5,7 +5,7 @@
 #include "PID.h"
 
 /* Controller parameters */
-#define PID_KP 0.1f
+#define PID_KP 5.0f
 #define PID_KI 0.01f
 #define PID_KD 0.01f
 
@@ -24,6 +24,10 @@
 
 /* Simulated dynamical system (first order) */
 float TestSystem_Update();
+int fan_init();
+int fan_close();
+int set_fan(float temp);
+
 
 int main()
 {
@@ -36,8 +40,8 @@ int main()
 
     PIDController_Init(&pid);
 
-    printf("Time (s)\tSystem Output\tControllerOutput\r\n");
-
+    printf("Time (s)\tSystem Output\tControllerOutput\tperiod\r\n");
+    fan_init();
     for (int t = 0;; t += SAMPLE_TIME_S)
     {
 
@@ -45,10 +49,11 @@ int main()
         float measurement = TestSystem_Update();
         /* Compute new control signal */
         PIDController_Update(&pid, 40, measurement);
-
-        printf("%d\t%f\t%f\r\n", t, measurement, pid.out);
+        
+        printf("%d\t%f\t%f\t%d\r\n", t, measurement, pid.out,set_fan(pid.out));
         sleep(SAMPLE_TIME_S);
     }
+    // fan_close();
     return 0;
 }
 
@@ -73,4 +78,109 @@ float TestSystem_Update()
     // printf("%f\n", atof(temp) / 1000);
 
     return atof(temp) / 1000;
+}
+int fan_init()
+{
+    int fd = open("/sys/class/pwm/pwmchip1/export", O_WRONLY);
+    if (-1 == fd)
+    {
+        printf("pwmchip open fail\n");
+        return -1;
+    }
+    char buf[1] = "0";
+    if (write(fd, buf, sizeof(buf))==-1)
+    {
+        printf("pwmchip export fail or running\n");
+        // return -1;
+    }
+    sleep(1);
+
+    fd = open("/sys/class/pwm/pwmchip1/pwm0/period", O_WRONLY);
+    if (-1 == fd)
+    {
+        printf("period open fail\n");
+        return -1;
+    }
+    char buf1[11] = "1000000000";
+    if (write(fd, buf1, sizeof(buf1))==-1)
+    {
+        printf("set period fail\n");
+        return -1;
+    }
+
+    fd = open("/sys/class/pwm/pwmchip1/pwm0/duty_cycle", O_WRONLY);
+    if (-1 == fd)
+    {
+        printf("duty_cycle open fail\n");
+        return -1;
+    }
+    char buf2[11] = "100000000";
+    if (write(fd, buf2, sizeof(buf2))==-1)
+    {
+        printf("set duty_cycle fail\n");
+        return -1;
+    }
+
+    fd = open("/sys/class/pwm/pwmchip1/pwm0/enable", O_WRONLY);
+    if (-1 == fd)
+    {
+        printf("enable open fail\n");
+        return -1;
+    }
+    char buf3[1] = "1";
+    if (write(fd, buf3, sizeof(buf3))==-1)
+    {
+        printf("set enable fail\n");
+        return -1;
+    }
+    return 1;
+}
+
+
+int fan_close()
+{
+
+    static float output = 0.0f;
+    const char *pwmchip = "/sys/class/pwm/pwmchip1/unexport";
+    int fd = open(pwmchip, O_WRONLY);
+    if (-1 == fd)
+    {
+        printf("pwmchip open fail\n");
+        return -1;
+    }
+    else
+    {
+        // printf("pwmchip open ok\n");
+    }
+    char buf[1] = "0";
+    int ok =write(fd, buf, sizeof(buf));
+
+    // printf("%f\n", atof(temp) / 1000);
+    // printf("%d\n",ok);
+    return ok;
+}
+
+
+int set_fan(float temp)
+{
+    int fd = open("/sys/class/pwm/pwmchip1/pwm0/period", O_WRONLY);
+    if (-1 == fd)
+    {
+        printf("period open fail\n");
+        return -1;
+    }
+    
+    // printf("%d\n",temp);
+    temp=100000000/(0-100/20*temp/100);
+    
+    // printf("%f\n",temp);
+    char buf1[11];
+    sprintf(buf1,"%d",(int)temp);
+    // printf(buf1);
+    if (write(fd, buf1, sizeof(buf1))==-1)
+    {
+        printf("set period fail\n");
+        return -1;
+    }
+    return (int)temp;
 }
