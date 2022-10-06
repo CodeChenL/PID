@@ -62,8 +62,8 @@ float TestSystem_Update()
 
     static float output = 0.0f;
     const char *sensor = "/sys/class/thermal/thermal_zone1/temp";
-    int fd = open(sensor, O_RDONLY);
-    if (-1 == fd)
+    int fd1 = open(sensor, O_RDONLY);
+    if (-1 == fd1)
     {
         printf("sensor open fail\n");
         return -1;
@@ -73,8 +73,9 @@ float TestSystem_Update()
         // printf("sensor open ok\n");
     }
     char temp[8] = {0};
-    read(fd, temp, sizeof(temp));
-
+    read(fd1, temp, sizeof(temp));
+    
+    close(fd1);
     // printf("%f\n", atof(temp) / 1000);
 
     return atof(temp) / 1000;
@@ -133,6 +134,8 @@ int fan_init()
         printf("set enable fail\n");
         return -1;
     }
+    
+    close(fd);
     return 1;
 }
 
@@ -157,14 +160,15 @@ int fan_close()
 
     // printf("%f\n", atof(temp) / 1000);
     // printf("%d\n",ok);
+    close(fd);
     return ok;
 }
 
 
 int set_fan(float temp)
 {
-    int fd = open("/sys/class/pwm/pwmchip1/pwm0/period", O_WRONLY);
-    if (-1 == fd)
+    int fd2 = open("/sys/class/pwm/pwmchip1/pwm0/period", O_WRONLY);
+    if (-1 == fd2)
     {
         printf("period open fail\n");
         return -1;
@@ -177,9 +181,10 @@ int set_fan(float temp)
     char buf1[11];
     sprintf(buf1,"%d",(int)temp);
     // printf(buf1);
-    if (write(fd, buf1, sizeof(buf1))==-1)
+    if (write(fd2, buf1, sizeof(buf1))==-1)
     {
         printf("set period fail\n");
     }
+    close(fd2);
     return (int)temp;
 }
