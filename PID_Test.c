@@ -5,20 +5,20 @@
 #include "PID.h"
 
 /* Controller parameters */
-#define PID_KP 5.0f
+#define PID_KP 1.0f
 #define PID_KI 0.01f
-#define PID_KD 0.01f
+#define PID_KD 0.0f
 
 #define PID_TAU 0.02f
 
-#define PID_LIM_MIN -100.0f
-#define PID_LIM_MAX 0.0f
+#define PID_LIM_MIN -20.0f
+#define PID_LIM_MAX -2.0f
 
 #define PID_LIM_MIN_INT -100.0f
 #define PID_LIM_MAX_INT 0.0f
 
 #define SAMPLE_TIME_S 1.0f
-
+#define DUTY "50000000"
 /* Maximum run-time of simulation */
 #define SIMULATION_TIME_MAX 4.0f
 
@@ -48,7 +48,7 @@ int main()
         /* Get measurement from system */
         float measurement = TestSystem_Update();
         /* Compute new control signal */
-        PIDController_Update(&pid, 40, measurement);
+        PIDController_Update(&pid, 37, measurement);
         
         printf("%d\t%f\t%f\t%d\r\n", t, measurement, pid.out,set_fan(pid.out));
         sleep(SAMPLE_TIME_S);
@@ -114,7 +114,7 @@ int fan_init()
         printf("duty_cycle open fail\n");
         return -1;
     }
-    char buf2[11] = "100000000";
+    char buf2[11] = DUTY;
     if (write(fd, buf2, sizeof(buf2))==-1)
     {
         printf("set duty_cycle fail\n");
@@ -171,7 +171,7 @@ int set_fan(float temp)
     }
     
     // printf("%d\n",temp);
-    temp=100000000/(0-100/20*temp/100);
+    temp=atoi(DUTY)/(0-100/20*temp/100);
     
     // printf("%f\n",temp);
     char buf1[11];
@@ -180,7 +180,6 @@ int set_fan(float temp)
     if (write(fd, buf1, sizeof(buf1))==-1)
     {
         printf("set period fail\n");
-        return -1;
     }
     return (int)temp;
 }
