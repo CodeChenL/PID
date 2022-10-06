@@ -6,7 +6,7 @@
 
 /* Controller parameters */
 #define PID_KP 1.0f
-#define PID_KI 0.01f
+#define PID_KI 0.001f
 #define PID_KD 0.0f
 
 #define PID_TAU 0.02f
@@ -28,7 +28,6 @@ int fan_init();
 int fan_close();
 int set_fan(float temp);
 
-
 int main()
 {
     /* Initialise PID controller */
@@ -49,8 +48,8 @@ int main()
         float measurement = TestSystem_Update();
         /* Compute new control signal */
         PIDController_Update(&pid, 37, measurement);
-        
-        printf("%d\t%f\t%f\t%d\r\n", t, measurement, pid.out,set_fan(pid.out));
+
+        printf("%d\t%f\t%f\t%d\r\n", t, measurement, pid.out, set_fan(pid.out));
         sleep(SAMPLE_TIME_S);
     }
     // fan_close();
@@ -74,7 +73,7 @@ float TestSystem_Update()
     }
     char temp[8] = {0};
     read(fd1, temp, sizeof(temp));
-    
+
     close(fd1);
     // printf("%f\n", atof(temp) / 1000);
 
@@ -89,7 +88,7 @@ int fan_init()
         return -1;
     }
     char buf[1] = "0";
-    if (write(fd, buf, sizeof(buf))==-1)
+    if (write(fd, buf, sizeof(buf)) == -1)
     {
         printf("pwmchip export fail or running\n");
         // return -1;
@@ -103,7 +102,7 @@ int fan_init()
         return -1;
     }
     char buf1[11] = "1000000000";
-    if (write(fd, buf1, sizeof(buf1))==-1)
+    if (write(fd, buf1, sizeof(buf1)) == -1)
     {
         printf("set period fail\n");
         return -1;
@@ -116,7 +115,7 @@ int fan_init()
         return -1;
     }
     char buf2[11] = DUTY;
-    if (write(fd, buf2, sizeof(buf2))==-1)
+    if (write(fd, buf2, sizeof(buf2)) == -1)
     {
         printf("set duty_cycle fail\n");
         return -1;
@@ -129,16 +128,15 @@ int fan_init()
         return -1;
     }
     char buf3[1] = "1";
-    if (write(fd, buf3, sizeof(buf3))==-1)
+    if (write(fd, buf3, sizeof(buf3)) == -1)
     {
         printf("set enable fail\n");
         return -1;
     }
-    
+
     close(fd);
     return 1;
 }
-
 
 int fan_close()
 {
@@ -156,14 +154,13 @@ int fan_close()
         // printf("pwmchip open ok\n");
     }
     char buf[1] = "0";
-    int ok =write(fd, buf, sizeof(buf));
+    int ok = write(fd, buf, sizeof(buf));
 
     // printf("%f\n", atof(temp) / 1000);
     // printf("%d\n",ok);
     close(fd);
     return ok;
 }
-
 
 int set_fan(float temp)
 {
@@ -173,15 +170,15 @@ int set_fan(float temp)
         printf("period open fail\n");
         return -1;
     }
-    
+
     // printf("%d\n",temp);
-    temp=atoi(DUTY)/(0-100/20*temp/100);
-    
+    temp = atoi(DUTY) / (0 - 100 / 20 * temp / 100);
+
     // printf("%f\n",temp);
     char buf1[11];
-    sprintf(buf1,"%d",(int)temp);
+    sprintf(buf1, "%d", (int)temp);
     // printf(buf1);
-    if (write(fd2, buf1, sizeof(buf1))==-1)
+    if (write(fd2, buf1, sizeof(buf1)) == -1)
     {
         printf("set period fail\n");
     }
