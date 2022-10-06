@@ -7,8 +7,8 @@
             "args": [
                 "-fdiagnostics-color=always",
                 "-g",
-                "${file}",
-                "${fileDirname}/PID.c",
+                // "${file}",
+                "${fileDirname}/*.c",
                 "-o",
                 "${fileDirname}/${fileBasenameNoExtension}"
             ],
