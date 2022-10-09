@@ -96,7 +96,7 @@ int fan_init()
     close(fd);
     sleep(1);
 
-    fd = open("/sys/class/pwm/pwmchip1/polarity", O_WRONLY);
+    fd = open("/sys/class/pwm/pwmchip1/pwm0/polarity", O_WRONLY);
     if (-1 == fd)
     {
         printf("polarity open fail\n");
@@ -105,8 +105,8 @@ int fan_init()
     char buf0[10] = "normal";
     if (write(fd, buf0, sizeof(buf0)) == -1)
     {
-        printf("polarity export fail or running\n");
-        // return -1;
+        printf("polarity set fail\n");
+        return -1;
     }
     close(fd);
 
@@ -116,7 +116,7 @@ int fan_init()
         printf("period open fail\n");
         return -1;
     }
-    char buf1[11] = "1000000000";
+    char buf1[12] = "1000000000";
     if (write(fd, buf1, sizeof(buf1)) == -1)
     {
         printf("set period fail\n");
@@ -192,8 +192,16 @@ int set_fan(float temp)
     temp = atoi(DUTY) / (0 - 100 / 20 * temp / 100);
 
     // printf("%f\n",temp);
-    char buf1[11];
-    sprintf(buf1, "%d", (int)temp);
+    char buf1[15];
+    if (temp < 1000000000.0f)
+    {
+        sprintf(buf1, "%d", (int)temp);
+    }
+    else
+    {
+        sprintf(buf1, "%ld", 60000000000);
+    }
+
     // printf(buf1);
     if (write(fd, buf1, sizeof(buf1)) == -1)
     {
