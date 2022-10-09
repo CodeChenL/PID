@@ -5,8 +5,8 @@
 #include "PID.h"
 
 /* Controller parameters */
-#define PID_KP 1.0f
-#define PID_KI 0.001f
+#define PID_KP 0.75f
+#define PID_KI 0.01f
 #define PID_KD 0.0f
 
 #define PID_TAU 0.02f
@@ -15,7 +15,7 @@
 #define PID_LIM_MAX -2.0f
 
 #define PID_LIM_MIN_INT -100.0f
-#define PID_LIM_MAX_INT 0.0f
+#define PID_LIM_MAX_INT 100.0f
 
 #define SAMPLE_TIME_S 1.0f
 #define DUTY "100000000"
@@ -26,7 +26,7 @@
 float TestSystem_Update();
 int fan_init();
 int fan_close();
-int set_fan(float temp);
+long set_fan(float temp);
 
 int main()
 {
@@ -39,7 +39,7 @@ int main()
 
     PIDController_Init(&pid);
 
-    printf("Time (s)\tSystem Output\tControllerOutput\tperiod\r\n");
+    printf("Time\tThermal\tPIDOutput\tPeriod\r\n");
     fan_init();
     for (int t = 0;; t += SAMPLE_TIME_S)
     {
@@ -49,7 +49,7 @@ int main()
         /* Compute new control signal */
         PIDController_Update(&pid, 37, measurement);
 
-        printf("%d\t%f\t%f\t%d\r\n", t, measurement, pid.out, set_fan(pid.out));
+        printf("%d\t%f\t%f\t%ld\r\n", t, measurement, pid.out, set_fan(pid.out));
         sleep(SAMPLE_TIME_S);
     }
     // fan_close();
@@ -179,7 +179,7 @@ int fan_close()
     return ok;
 }
 
-int set_fan(float temp)
+long set_fan(float temp)
 {
     int fd = open("/sys/class/pwm/pwmchip1/pwm0/period", O_WRONLY);
     if (-1 == fd)
@@ -193,20 +193,17 @@ int set_fan(float temp)
 
     // printf("%f\n",temp);
     char buf1[15];
-    if (temp < 1000000000.0f)
+    if (temp >= 1000000000.0f)
     {
-        sprintf(buf1, "%d", (int)temp);
+        temp = 60000000000.0f;
     }
-    else
-    {
-        sprintf(buf1, "%ld", 60000000000);
-    }
-
+    sprintf(buf1, "%ld", (long)temp);
     // printf(buf1);
     if (write(fd, buf1, sizeof(buf1)) == -1)
     {
         printf("set period fail\n");
     }
     close(fd);
-    return (int)temp;
+    // printf("temp:%ld\n", (long)temp);
+    return (long)temp;
 }
