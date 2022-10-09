@@ -18,7 +18,7 @@
 #define PID_LIM_MAX_INT 0.0f
 
 #define SAMPLE_TIME_S 1.0f
-#define DUTY "50000000"
+#define DUTY "100000000"
 /* Maximum run-time of simulation */
 #define SIMULATION_TIME_MAX 4.0f
 
@@ -93,7 +93,22 @@ int fan_init()
         printf("pwmchip export fail or running\n");
         // return -1;
     }
+    close(fd);
     sleep(1);
+
+    fd = open("/sys/class/pwm/pwmchip1/polarity", O_WRONLY);
+    if (-1 == fd)
+    {
+        printf("polarity open fail\n");
+        return -1;
+    }
+    char buf0[10] = "normal";
+    if (write(fd, buf0, sizeof(buf0)) == -1)
+    {
+        printf("polarity export fail or running\n");
+        // return -1;
+    }
+    close(fd);
 
     fd = open("/sys/class/pwm/pwmchip1/pwm0/period", O_WRONLY);
     if (-1 == fd)
@@ -107,6 +122,7 @@ int fan_init()
         printf("set period fail\n");
         return -1;
     }
+    close(fd);
 
     fd = open("/sys/class/pwm/pwmchip1/pwm0/duty_cycle", O_WRONLY);
     if (-1 == fd)
@@ -120,6 +136,7 @@ int fan_init()
         printf("set duty_cycle fail\n");
         return -1;
     }
+    close(fd);
 
     fd = open("/sys/class/pwm/pwmchip1/pwm0/enable", O_WRONLY);
     if (-1 == fd)
@@ -164,8 +181,8 @@ int fan_close()
 
 int set_fan(float temp)
 {
-    int fd2 = open("/sys/class/pwm/pwmchip1/pwm0/period", O_WRONLY);
-    if (-1 == fd2)
+    int fd = open("/sys/class/pwm/pwmchip1/pwm0/period", O_WRONLY);
+    if (-1 == fd)
     {
         printf("period open fail\n");
         return -1;
@@ -178,10 +195,10 @@ int set_fan(float temp)
     char buf1[11];
     sprintf(buf1, "%d", (int)temp);
     // printf(buf1);
-    if (write(fd2, buf1, sizeof(buf1)) == -1)
+    if (write(fd, buf1, sizeof(buf1)) == -1)
     {
         printf("set period fail\n");
     }
-    close(fd2);
+    close(fd);
     return (int)temp;
 }
