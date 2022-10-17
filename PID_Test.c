@@ -6,8 +6,8 @@
 
 /* Controller parameters */
 #define PID_KP 0.75f
-#define PID_KI 0.01f
-#define PID_KD 0.0f
+#define PID_KI 0.0f
+#define PID_KD 0.001f
 
 #define PID_TAU 0.02f
 
@@ -18,7 +18,7 @@
 #define PID_LIM_MAX_INT 100.0f
 
 #define SAMPLE_TIME_S 1.0f
-#define DUTY "100000000"
+#define DUTY "50000000"
 /* Maximum run-time of simulation */
 #define SIMULATION_TIME_MAX 4.0f
 
@@ -193,9 +193,9 @@ long set_fan(float temp)
 
     // printf("%f\n",temp);
     char buf1[15];
-    if (temp >= 1000000000.0f)
+    if (temp >= 500000000.0f)
     {
-        temp = 60000000000.0f;
+        temp = 10000000000.0f;
     }
     sprintf(buf1, "%ld", (long)temp);
     // printf(buf1);
