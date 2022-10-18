@@ -96,20 +96,6 @@ int fan_init()
     close(fd);
     sleep(1);
 
-    fd = open("/sys/class/pwm/pwmchip1/pwm0/polarity", O_WRONLY);
-    if (-1 == fd)
-    {
-        printf("polarity open fail\n");
-        return -1;
-    }
-    char buf0[10] = "normal";
-    if (write(fd, buf0, sizeof(buf0)) == -1)
-    {
-        printf("polarity set fail\n");
-        return -1;
-    }
-    close(fd);
-
     fd = open("/sys/class/pwm/pwmchip1/pwm0/period", O_WRONLY);
     if (-1 == fd)
     {
@@ -152,6 +138,21 @@ int fan_init()
     }
 
     close(fd);
+    
+    fd = open("/sys/class/pwm/pwmchip1/pwm0/polarity", O_WRONLY);
+    if (-1 == fd)
+    {
+        printf("polarity open fail\n");
+        return -1;
+    }
+    char buf0[10] = "normal";
+    if (write(fd, buf0, sizeof(buf0)) == -1)
+    {
+        printf("polarity set fail\n");
+        return -1;
+    }
+    close(fd);
+    
     return 1;
 }
 
