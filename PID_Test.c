@@ -81,7 +81,7 @@ float TestSystem_Update()
 }
 int fan_init()
 {
-    int fd = open("/sys/class/pwm/pwmchip1/export", O_WRONLY);
+    int fd = open("/sys/class/pwm/pwmchip0/export", O_WRONLY);
     if (-1 == fd)
     {
         printf("pwmchip open fail\n");
@@ -96,7 +96,7 @@ int fan_init()
     close(fd);
     sleep(1);
 
-    fd = open("/sys/class/pwm/pwmchip1/pwm0/period", O_WRONLY);
+    fd = open("/sys/class/pwm/pwmchip0/pwm0/period", O_WRONLY);
     if (-1 == fd)
     {
         printf("period open fail\n");
@@ -110,7 +110,7 @@ int fan_init()
     }
     close(fd);
 
-    fd = open("/sys/class/pwm/pwmchip1/pwm0/duty_cycle", O_WRONLY);
+    fd = open("/sys/class/pwm/pwmchip0/pwm0/duty_cycle", O_WRONLY);
     if (-1 == fd)
     {
         printf("duty_cycle open fail\n");
@@ -124,7 +124,7 @@ int fan_init()
     }
     close(fd);
 
-    fd = open("/sys/class/pwm/pwmchip1/pwm0/enable", O_WRONLY);
+    fd = open("/sys/class/pwm/pwmchip0/pwm0/enable", O_WRONLY);
     if (-1 == fd)
     {
         printf("enable open fail\n");
@@ -139,7 +139,7 @@ int fan_init()
 
     close(fd);
     
-    fd = open("/sys/class/pwm/pwmchip1/pwm0/polarity", O_WRONLY);
+    fd = open("/sys/class/pwm/pwmchip0/pwm0/polarity", O_WRONLY);
     if (-1 == fd)
     {
         printf("polarity open fail\n");
@@ -160,7 +160,7 @@ int fan_close()
 {
 
     static float output = 0.0f;
-    const char *pwmchip = "/sys/class/pwm/pwmchip1/unexport";
+    const char *pwmchip = "/sys/class/pwm/pwmchip0/unexport";
     int fd = open(pwmchip, O_WRONLY);
     if (-1 == fd)
     {
@@ -182,7 +182,7 @@ int fan_close()
 
 long set_fan(float temp)
 {
-    int fd = open("/sys/class/pwm/pwmchip1/pwm0/period", O_WRONLY);
+    int fd = open("/sys/class/pwm/pwmchip0/pwm0/period", O_WRONLY);
     if (-1 == fd)
     {
         printf("period open fail\n");

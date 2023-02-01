@@ -1,0 +1,14 @@
+[Unit]
+Description=PID_FAN
+After=multi-user.target
+Wants=multi-user.target
+ 
+[Service]
+User=root
+Type=simple
+ExecStart=/home/chen/PID/PID_Test
+ExecStop=/bin/kill -s QUIT $MAINPID
+Restart=always
+StandardOutput=journal 
+[Install]
+WantedBy=multi-user.target
